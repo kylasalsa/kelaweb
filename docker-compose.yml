@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kyla_portfolio_app
+    ports:
+      - "8082:80"
+    volumes:
+      - .:/var/www/html
+    networks:
+      - kyla_net
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_KEY=base64:SomeRandomKeyHere
+      - APP_URL=http://localhost:8082
+      - LOG_CHANNEL=stack
+
+networks:
+  kyla_net:
+    driver: bridge
