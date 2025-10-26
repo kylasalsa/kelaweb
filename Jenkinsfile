@@ -1,44 +1,36 @@
 pipeline {
-    agent any
+  agent any
 
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
+  environment {
+    IMAGE_NAME = 'kylasalsa/kelaweb'
+    REGISTRY = 'https://index.docker.io/v1/'
+    REGISTRY_CREDENTIALS = 'dockerhub-credentials'
+  }
 
-        stage('Install Dependencies') {
-            steps {
-                sh '''
-                docker run --rm -v $(pwd):/app -w /app composer:2 \
-                    composer install --no-interaction --prefer-dist --optimize-autoloader
-                '''
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t laravel-portfolio-app .'
-            }
-        }
-
-        stage('Deploy with Docker Compose') {
-            steps {
-                sh '''
-                docker compose down || true
-                docker compose up -d --build
-                '''
-            }
-        }
+  stages {
+    stage('Install Dependencies') {
+      steps {
+        bat 'echo Installing dependencies...'
+        bat 'npm install'
+      }
     }
 
-    post {
-        success {
-            echo '✅ Build dan Deploy Berhasil! Laravel Portfolio kamu sudah jalan.'
-        }
-        failure {
-            echo '❌ Build gagal, cek log error di atas.'
-        }
+    stage('Build Docker Image') {
+      steps {
+        bat 'docker build -t %IMAGE_NAME%:%BUILD_NUMBER% .'
+      }
     }
+
+    stage('Deploy with Docker Compose') {
+      steps {
+        bat 'docker-compose up -d'
+      }
+    }
+  }
+
+  post {
+    always {
+      echo '✅ Pipeline selesai — Build dan Deploy dengan Docker di Windows 🚀'
+    }
+  }
 }
